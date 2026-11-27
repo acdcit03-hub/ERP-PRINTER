@@ -22,11 +22,20 @@ function buildAgentQuery(query, omitKeys = ['host']) {
   return params.toString();
 }
 
-export default function createProxyController(peerStore) {
+export default function createProxyController(peerStore, relay, jobQueue) {
   return {
     async options(req, res) {
       try {
         const peer = requirePeer(peerStore, req.query.host);
+        if (relay?.isOnline(peer.id)) {
+          return res.json({
+            duplex: true,
+            color: true,
+            orientation: true,
+            paperSizes: ['A4', 'Letter', 'Legal'],
+            mode: 'relay',
+          });
+        }
         const qs = buildAgentQuery(req.query);
         const result = await proxyService.getJson(peer, `/api/options?${qs}`);
         return res.status(result.status || 502).json(result.data);
@@ -38,6 +47,9 @@ export default function createProxyController(peerStore) {
     async jobs(req, res) {
       try {
         const peer = requirePeer(peerStore, req.query.host);
+        if (relay?.isOnline(peer.id)) {
+          return res.json({ jobs: [], mode: 'relay' });
+        }
         const qs = buildAgentQuery(req.query);
         const result = await proxyService.getJson(peer, `/api/jobs?${qs}`);
         return res.status(result.status || 502).json(result.data);
@@ -49,6 +61,9 @@ export default function createProxyController(peerStore) {
     async orders(req, res) {
       try {
         const peer = requirePeer(peerStore, req.query.host);
+        if (relay?.isOnline(peer.id)) {
+          return res.json({ orders: [], mode: 'relay' });
+        }
         const result = await proxyService.getJson(peer, '/api/orders');
         return res.status(result.status || 502).json(result.data);
       } catch (err) {
@@ -59,6 +74,9 @@ export default function createProxyController(peerStore) {
     async cancel(req, res) {
       try {
         const peer = requirePeer(peerStore, req.query.host);
+        if (relay?.isOnline(peer.id)) {
+          return res.status(501).json({ error: 'Cancel via relay is not supported yet' });
+        }
         const qs = buildAgentQuery(req.query);
         const result = await proxyService.postJson(peer, `/api/cancel?${qs}`);
         return res.status(result.status || 502).json(result.data);
@@ -85,6 +103,27 @@ export default function createProxyController(peerStore) {
           filename = safeBasename(req.headers['x-filename'] || 'document.bin');
         } else {
           return res.status(400).json({ error: 'File upload required' });
+        }
+
+        // Cloud path: queue for Agent pull (Render → office PC)
+        if (relay?.isOnline(peer.id) && jobQueue) {
+          const printer = String(req.query.printer || '').trim();
+          if (!printer) {
+            return res.status(400).json({ error: 'printer query parameter is required' });
+          }
+          const query = { ...req.query };
+          delete query.host;
+          const job = jobQueue.enqueue({
+            peerId: peer.id,
+            printer,
+            filename,
+            body,
+            query,
+          });
+          const finished = await jobQueue.waitFor(job.id, 180000);
+          const result = finished.result || { success: false, error: 'No result' };
+          const status = result.success ? 200 : 500;
+          return res.status(status).json(result);
         }
 
         const qs = buildAgentQuery(req.query);

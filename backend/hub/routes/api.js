@@ -5,7 +5,7 @@ import { uploadDir, MAX_FILE_SIZE } from '../../shared/utils/files.js';
 
 export default function createHubRouter(controllers) {
   const router = express.Router();
-  const { peers, aggregate, scan, proxy } = controllers;
+  const { peers, aggregate, scan, proxy, relay } = controllers;
 
   const uploads = uploadDir('printer_hub_uploads');
   const storage = multer.diskStorage({
@@ -26,6 +26,12 @@ export default function createHubRouter(controllers) {
 
   router.post('/peers/add', peers.add);
   router.post('/peers/remove', peers.remove);
+
+  // Agent → Hub relay (office PC dials out to Render)
+  router.post('/agent/heartbeat', (req, res) => relay.heartbeat(req, res));
+  router.get('/agent/jobs/next', (req, res) => relay.nextJob(req, res));
+  router.get('/agent/jobs/:jobId/file', (req, res) => relay.downloadJob(req, res));
+  router.post('/agent/jobs/:jobId/complete', (req, res) => relay.completeJob(req, res));
 
   router.get('/options', (req, res) => proxy.options(req, res));
   router.get('/jobs', (req, res) => proxy.jobs(req, res));

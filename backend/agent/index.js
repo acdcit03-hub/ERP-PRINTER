@@ -4,6 +4,8 @@ import { uploadDir } from '../shared/utils/files.js';
 import PrinterCache from './models/Printer.js';
 import OrderStore from './models/Order.js';
 import { discoverPrinters } from './services/printerDiscovery.js';
+import { startHubClient } from './services/hubClient.js';
+import { getLanIpv4 } from '../shared/utils/network.js';
 import createInfoController from './controllers/infoController.js';
 import createPrinterController from './controllers/printerController.js';
 import createJobController from './controllers/jobController.js';
@@ -18,6 +20,10 @@ const config = {
   name: process.env.PRINT_NAME || hostnameDefault(),
   pin: process.env.PRINT_PIN || '',
   sumatraPath: process.env.SUMATRA_PATH || 'SumatraPDF.exe',
+  hubUrl: String(process.env.PRINT_HUB_URL || '').trim(),
+  hubPin: process.env.PRINT_HUB_PIN || process.env.PRINT_PIN || '',
+  peerId: process.env.PRINT_PEER_ID || 'office-pc',
+  agentHost: process.env.PRINT_AGENT_HOST || getLanIpv4() || '192.168.29.40',
 };
 
 const printerCache = new PrinterCache();
@@ -56,7 +62,25 @@ async function start() {
 
   app.listen(config.port, '0.0.0.0', () => {
     console.log(`Printer Agent listening on http://0.0.0.0:${config.port}`);
+    console.log(`LAN address: http://${config.agentHost}:${config.port}`);
     if (config.pin) console.log('PIN authentication enabled');
+
+    if (config.hubUrl) {
+      startHubClient({
+        hubUrl: config.hubUrl,
+        peerId: config.peerId,
+        address: `${config.agentHost}:${config.port}`,
+        name: config.name,
+        pin: config.pin,
+        hubPin: config.hubPin,
+        printerCache,
+        orderStore,
+        uploadDir: uploads,
+        sumatraPath: config.sumatraPath,
+      });
+    } else {
+      console.log('PRINT_HUB_URL not set — LAN-only mode (no Render relay)');
+    }
   });
 }
 

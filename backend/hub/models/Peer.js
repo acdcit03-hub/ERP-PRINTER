@@ -7,9 +7,10 @@ import { normalizeAgentAddress } from '../../shared/utils/network.js';
  * Peer store persisted to peers.json
  */
 export default class PeerStore {
-  constructor(filePath, defaultAgentPort = 8001) {
+  constructor(filePath, defaultAgentPort = 8001, defaultAgentHost = '') {
     this.filePath = filePath;
     this.defaultAgentPort = defaultAgentPort;
+    this.defaultAgentHost = String(defaultAgentHost || '').trim();
     this.peers = [];
     this.load();
   }
@@ -41,12 +42,15 @@ export default class PeerStore {
   }
 
   _localFallback() {
+    const host = this.defaultAgentHost || '192.168.29.40';
+    const port = this.defaultAgentPort;
     return {
-      id: 'local',
-      name: 'Local Agent',
-      address: `127.0.0.1:${this.defaultAgentPort}`,
-      url: `http://127.0.0.1:${this.defaultAgentPort}`,
+      id: 'office-pc',
+      name: 'Office PC',
+      address: `${host}:${port}`,
+      url: `http://${host}:${port}`,
       pin: '',
+      mode: 'relay',
     };
   }
 
