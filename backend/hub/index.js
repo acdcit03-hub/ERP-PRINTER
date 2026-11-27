@@ -22,7 +22,7 @@ const config = {
   agentPort: Number(process.env.PRINT_AGENT_PORT || 8001),
   agentHost: process.env.PRINT_AGENT_HOST || '192.168.29.40',
   pin: process.env.PRINT_PIN || '',
-};
+}; 
 
 const peersPath = path.join(__dirname, '..', '..', 'peers.json');
 const peerStore = new PeerStore(peersPath, config.agentPort, config.agentHost);
