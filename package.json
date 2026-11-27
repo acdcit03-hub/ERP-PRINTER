@@ -1,0 +1,27 @@
+{
+  "name": "erp-printer-system",
+  "version": "1.0.0",
+  "description": "Network printer Hub + Agent system for office LAN printing",
+  "type": "module",
+  "main": "backend/hub/index.js",
+  "scripts": {
+    "hub": "node backend/hub/index.js",
+    "agent": "node backend/agent/index.js",
+    "start": "node backend/hub/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1"
+  },
+  "keywords": [
+    "printer",
+    "hub",
+    "agent",
+    "lan"
+  ],
+  "license": "MIT"
+}

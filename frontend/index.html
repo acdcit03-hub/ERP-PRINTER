@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Print Hub Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Print Hub</h1>
+      <p>Office LAN network printer dashboard</p>
+    </div>
+    <div class="toolbar">
+      <button type="button" class="secondary" id="btnRefresh">Refresh printers</button>
+      <button type="button" class="secondary" id="btnScan">Scan network</button>
+      <button type="button" class="secondary" id="btnOrders">Refresh history</button>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>Add office PC / printer agent</h2>
+      <form id="addPeerForm">
+        <div class="form-row">
+          <label>
+            Agent address
+            <input name="address" placeholder="192.168.29.107:8001" required />
+          </label>
+          <label>
+            Display name
+            <input name="name" placeholder="Office-PC-1" />
+          </label>
+          <label>
+            Agent PIN
+            <input name="pin" type="password" placeholder="optional" />
+          </label>
+        </div>
+        <div class="actions">
+          <button type="submit">Add PC</button>
+          <span class="muted">Registers an Agent running on the office LAN</span>
+        </div>
+      </form>
+    </section>
+
+    <div class="grid-2">
+      <section>
+        <h2>Registered office PCs</h2>
+        <ul class="host-list" id="hostList"></ul>
+      </section>
+      <section>
+        <h2>Network scan results</h2>
+        <ul class="scan-list" id="scanList">
+          <li class="empty">Click “Scan network” to discover Agents</li>
+        </ul>
+      </section>
+    </div>
+
+    <section>
+      <h2>Printers</h2>
+      <ul class="printer-list" id="printerList">
+        <li class="empty">No printers yet — refresh after Agents are online</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Print document</h2>
+      <div class="print-layout">
+        <div class="print-settings">
+          <div class="form-row form-row-stacked">
+            <label>
+              Document
+              <input type="file" id="fileInput" />
+            </label>
+            <label>
+              Copies
+              <input type="number" id="copies" min="1" max="999" value="1" />
+            </label>
+            <label>
+              Color mode
+              <select id="color">
+                <option value="color">Color</option>
+                <option value="mono">Black &amp; White</option>
+              </select>
+            </label>
+            <label>
+              Duplex
+              <select id="duplex">
+                <option value="one">One-sided</option>
+                <option value="long">Long edge</option>
+                <option value="short">Short edge</option>
+              </select>
+            </label>
+            <label>
+              Orientation
+              <select id="orientation">
+                <option value="auto">Auto</option>
+                <option value="portrait">Portrait</option>
+                <option value="landscape">Landscape</option>
+              </select>
+            </label>
+            <label>
+              Paper
+              <input id="paper" placeholder="A4" />
+            </label>
+            <label>
+              Page range
+              <input id="range" placeholder="1-3,5" />
+            </label>
+            <label>
+              Pages per sheet (n-up)
+              <input type="number" id="nup" min="1" max="16" value="1" />
+            </label>
+            <label>
+              Scale
+              <select id="scale">
+                <option value="fit">Fit</option>
+                <option value="actual">Actual</option>
+                <option value="custom">Custom</option>
+              </select>
+            </label>
+            <label>
+              Zoom %
+              <input type="number" id="zoom" min="10" max="400" value="100" />
+            </label>
+            <label>
+              Quality
+              <select id="quality">
+                <option value="draft">Draft</option>
+                <option value="normal" selected>Normal</option>
+                <option value="high">High</option>
+              </select>
+            </label>
+            <label>
+              Collate
+              <select id="collate">
+                <option value="0">No</option>
+                <option value="1">Yes</option>
+              </select>
+            </label>
+          </div>
+          <div class="actions">
+            <button type="button" id="btnPrint">Print to selected printers</button>
+            <span class="muted" id="selectionHint">Select one or more printers above</span>
+          </div>
+        </div>
+        <div class="file-preview" id="filePreview">
+          <div class="file-preview-meta" id="filePreviewMeta">No file selected</div>
+          <div class="file-preview-frame" id="filePreviewFrame">
+            <div class="file-preview-placeholder">Select a document to preview</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid-2">
+      <section>
+        <h2>Selected printer queue</h2>
+        <div class="actions" style="margin-bottom: 0.75rem">
+          <button type="button" class="secondary" id="btnQueue">Load queue</button>
+        </div>
+        <ul class="job-list" id="jobList">
+          <li class="empty">Select a single printer, then load queue</li>
+        </ul>
+      </section>
+      <section>
+        <h2>Print order history</h2>
+        <ul class="order-list" id="orderList">
+          <li class="empty">No orders yet</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>
